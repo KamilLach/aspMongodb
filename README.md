@@ -1,2 +1,2 @@
 # aspMongodb
-Asp.net with mongoDB starte 
+Asp.net with mongoDB starter project 
