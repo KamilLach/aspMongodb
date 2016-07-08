@@ -1,36 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoIntegration.Core;
+using MongoIntegration.Framework;
 using MongoIntegration.Model;
 
-namespace MongoIntegration.WebApi.Payment
+namespace MongoIntegration.WebApi.Payment.Queries
 {
-    public class PaymentInvoiceCommand : IPaymentInvoiceCommand
+    public class AddInvoiceQueryHandler : IQueryHandler<AddInvoiceQuery, Invoice>
     {
         private readonly IMongoDatabase _dbContext;
 
-        public PaymentInvoiceCommand(IMongoDatabase dbContext)
+        public AddInvoiceQueryHandler(IMongoDatabase dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public void Execute()
+        public Invoice Handle(AddInvoiceQuery query)
         {
             var collection = _dbContext.GetCollection<BsonDocument>("invoice");
             var generator = new Random();
             var invoice = new Invoice
             {
-                InvoiceNumber = "FA13423/2016/03/" + generator.Next(),
+                InvoiceNumber = query.InvoiceNumber + generator.Next(),
                 IssueDate = DateTime.Now,
-                Summary = "For all procuts"
+                Summary = query.Summary
             };
 
             collection.InsertOne(invoice.ToBsonDocument());
+            return invoice;
         }
-    }
-
-    public interface IPaymentInvoiceCommand : ICommand
-    {
     }
 }

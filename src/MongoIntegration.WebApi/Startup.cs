@@ -5,11 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
-using MongoIntegration.Core;
+using MongoIntegration.Framework;
+using MongoIntegration.Framework.Implementation;
 using MongoIntegration.Model;
 using MongoIntegration.WebApi.Bootstrap;
 using MongoIntegration.WebApi.Payment;
+using MongoIntegration.WebApi.Payment.Queries;
 
 namespace MongoIntegration.WebApi
 {
@@ -31,11 +32,13 @@ namespace MongoIntegration.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DocumentStoreSettings>(Configuration.GetSection("DocumentStore"));
+            services.TryAddSingleton<IQueryExecutor, DefaultQueryExecutor>();
+
             services.TryAddScoped<IDocumentDbContextProvider, DocumentDbContextProvider>();
-            services.TryAddScoped(provider => provider.GetService<IDocumentDbContextProvider>().CreateContext());
-            
-            services.TryAddTransient<IPaymentDataQuery, PaymentDataQuery>();
-            services.TryAddTransient<IPaymentInvoiceCommand, PaymentInvoiceCommand>();
+            services.TryAddScoped(provider => provider.GetService<IDocumentDbContextProvider>().CreateContext());         
+
+            services.TryAddTransient<IQueryHandler<GetAllInvoicesQuery, IEnumerable<Invoice>>, GetAllInvoicesQueryHandler>();
+            services.TryAddTransient<IQueryHandler<AddInvoiceQuery, Invoice>, AddInvoiceQueryHandler>();
             services.AddMvc();
         }
 
